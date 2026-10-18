@@ -7,4 +7,3 @@ android/local.properties
 *.keystore
 *.jks
 design-handoff/
-www/seeds.js
