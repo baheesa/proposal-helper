@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Proposal Audit</string>
+    <string name="title_activity_main">Proposal Audit</string>
+    <string name="package_name">com.proposalaudit.app</string>
+    <string name="custom_url_scheme">com.proposalaudit.app</string>
+</resources>

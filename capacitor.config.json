@@ -1,0 +1,7 @@
+{
+  "appId": "com.proposalaudit.app",
+  "appName": "Proposal Audit",
+  "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "plugins": { "CapacitorHttp": { "enabled": true } }
+}

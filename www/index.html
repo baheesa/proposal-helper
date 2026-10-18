@@ -1,0 +1,624 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Proposal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6F5F1; --card:#FFFFFF; --sf2:#EEECE7; --ink:#17171A; --muted:#5B5A62; --line:#E3E1DB;
+  --blue:#2D46D6; --bluebg:#E6EAFC; --bluetxt:#2238B8;
+  --forest:#2D46D6; --lime:#2D46D6; --dark:#17171A;
+  --ok:#1A7040; --warn:#8A5200; --bad:#B3261E;
+  --okbg:#E1F0E6; --warnbg:#F9EDD5; --badbg:#FBE3E0; --zone:#E1F0E6;
+  --mark:#FFEB99;
+  --nav-h:64px; --safe-bot:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#111113; --card:#1A1A1E; --sf2:#25252B; --ink:#EDECE9; --muted:#A4A3AC; --line:#2E2E35;
+    --blue:#8EA1FF; --bluebg:#1F2654; --bluetxt:#B4C1FF;
+    --forest:#8EA1FF; --lime:#8EA1FF; --dark:#0a0a09;
+    --ok:#6DCB8F; --warn:#EFB45A; --bad:#FF8C80; --okbg:#15301F; --warnbg:#36290F; --badbg:#3B1916; --zone:#15301F; --mark:#4D420F; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Instrument Sans",ui-sans-serif,system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased}
+.wrap{max-width:640px;margin:0 auto;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(var(--nav-h) + var(--safe-bot) + 16px)}
+/* Top bar — hidden, each section has its own header */
+.topbar{display:none}
+/* Bottom nav */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:var(--safe-bot);z-index:100}
+.bnav button{flex:1;border:0;background:transparent;color:var(--muted);font:inherit;font-size:.7rem;font-weight:600;padding:10px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:color .15s}
+.bnav button svg{width:22px;height:22px;stroke-width:1.7;fill:none;stroke:currentColor}
+.bnav button[aria-selected=true]{color:var(--blue)}
+/* Hide old tabs */
+.tabs{display:none}
+form{display:flex;flex-direction:column;gap:10px;margin-bottom:6px}
+input[type=text],textarea{width:100%;min-height:48px;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit}
+textarea{min-height:auto;resize:none;line-height:1.55}
+input:focus,textarea:focus,button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.go{min-height:52px;padding:0 20px;border:0;border-radius:14px;background:var(--blue);color:#fff;font:inherit;font-weight:700;font-size:1rem;letter-spacing:-.01em;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.go[disabled]{opacity:.5}
+.hint{color:var(--muted);font-size:.85rem;margin:2px 0 14px}
+a{color:var(--blue)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:0 0 10px}
+.card h2{margin:0 0 10px;font-size:1.05rem}
+.card h3{margin:14px 0 4px;font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.gauges{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}
+.gauge small{display:block;color:var(--muted);font-size:.72rem;margin-top:-2px}
+.gauge svg{max-width:100%;height:auto}
+.sum-head{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.sum-score{font-size:2.8rem;font-weight:900;line-height:1;font-variant-numeric:tabular-nums;flex:none}
+.sum-host{font-weight:700;font-size:.95rem;overflow-wrap:anywhere}
+.sum-cats{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.cat-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:99px;background:var(--bg);border:1px solid var(--line);font-size:.78rem;font-weight:600}
+.cat-pill b{font-variant-numeric:tabular-nums}
+.glimpse-table{display:grid;grid-template-columns:max-content 1fr;gap:5px 12px;font-size:.85rem;margin:10px 0 8px;padding:10px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.glimpse-table .gl{color:var(--muted);white-space:nowrap;font-size:.78rem;font-weight:600;text-transform:uppercase;letter-spacing:.04em;padding-top:2px}
+.glimpse-table .gv{overflow-wrap:anywhere;color:var(--ink)}
+.glimpse-table .gv a{color:var(--forest);text-decoration:none;font-weight:600}
+.glimpse-ext{display:flex;flex-wrap:wrap;gap:10px;font-size:.82rem;margin:0 0 10px}
+.glimpse-ext a{color:var(--forest);font-weight:600;text-decoration:none;padding:4px 10px;border-radius:99px;background:var(--bg);border:1px solid var(--line)}
+.fix-ol{list-style:none;margin:6px 0 10px;padding:0;display:flex;flex-direction:column;gap:4px}
+.fix-ol li{display:flex;align-items:baseline;gap:7px;font-size:.9rem}
+.fix-ol li::before{content:attr(data-n);flex:none;width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:800;background:var(--badbg);color:var(--bad)}
+.fix-ol li.warn::before{background:var(--warnbg);color:var(--warn)}
+.sum-ok{font-size:.82rem;color:var(--muted);margin:0 0 10px}
+.sum-ok b{color:var(--ok)}
+.big{display:flex;align-items:center;gap:14px;margin-bottom:12px}
+.big .num{font-size:2.4rem;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.big small{color:var(--muted);display:block}
+.stack{display:flex;height:12px;border-radius:99px;overflow:hidden;background:var(--line);margin:10px 0 6px}
+.stack i{display:block;height:100%}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
+.legend b{color:var(--ink)}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px}
+.row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line)}
+.row.first{border-top:0}
+.chip{flex:none;min-width:56px;text-align:center;font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:4px 6px;border-radius:6px;margin-top:2px}
+.chip.ok{background:var(--okbg);color:var(--ok)} .chip.warn{background:var(--warnbg);color:var(--warn)} .chip.bad{background:var(--badbg);color:var(--bad)} .chip.info{background:var(--line);color:var(--muted)}
+.row .t{min-width:0;flex:1}
+.row .t b{display:block;font-size:.95rem}
+.row .t .d{color:var(--muted);font-size:.88rem;overflow-wrap:anywhere}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tag{background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px 10px;font-size:.82rem}
+.tag.on{background:var(--okbg);border-color:transparent;color:var(--ok)}
+.tag.off{background:var(--badbg);border-color:transparent;color:var(--bad);text-decoration:line-through}
+.err{background:var(--badbg);color:var(--bad);border-radius:10px;padding:12px;margin:10px 0}
+.note{background:var(--warnbg);color:var(--warn);border-radius:10px;padding:12px;margin:6px 0}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{display:inline-block;padding:11px 14px;border-radius:10px;border:1.5px solid var(--blue);color:var(--blue);background:transparent;font:inherit;font-weight:600;text-decoration:none}
+.btn.fill{background:var(--blue);color:#fff}
+details{margin-top:8px} summary{cursor:pointer;color:var(--forest);font-weight:600}
+pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:.8rem;margin:8px 0 0}
+.filters{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;margin:0 -2px}
+.filters button{flex:none;padding:8px 14px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:.9rem;font-weight:600}
+.filters button[aria-pressed=true]{background:var(--blue);border-color:var(--blue);color:#fff}
+.meter{position:relative;height:10px;border-radius:99px;background:var(--line);margin:8px 0 2px}
+.meter .zone{position:absolute;top:0;bottom:0;background:var(--zone);border-radius:99px}
+.meter .mk{position:absolute;top:-4px;width:6px;height:18px;border-radius:3px;margin-left:-3px;background:var(--ink)}
+.scale{display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted)}
+.kw{display:grid;grid-template-columns:minmax(0,1fr) 36px;gap:2px 8px;align-items:center;margin-top:6px;font-size:.85rem}
+.kw .bar{height:8px;border-radius:99px;background:var(--forest);grid-column:1}
+.kw .lab{grid-column:1;overflow-wrap:anywhere}
+.kw .n{grid-row:span 2;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.tree{margin-top:6px;font-size:.85rem}
+.tree div{display:flex;gap:6px;padding:2px 0;min-width:0}
+.tree em{flex:none;font-style:normal;font-weight:800;font-size:.68rem;padding:1px 5px;border-radius:4px;background:var(--forest);color:#fff;height:fit-content;margin-top:3px}
+@media (prefers-color-scheme:dark){.tree em{color:#06130c}}
+.tree span{min-width:0;overflow-wrap:anywhere}
+.schemaCard{border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px}
+.schemaCard b{font-size:.9rem}
+.check{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.check.first{border-top:0}
+.check input{width:22px;height:22px;flex:none;margin-top:2px;accent-color:var(--forest)}
+.check label{min-width:0}
+.check small{display:block;color:var(--muted)}
+.field{display:block;margin:8px 0 4px;font-weight:600;font-size:.9rem}
+[hidden]{display:none!important}
+</style>
+<link rel="stylesheet" href="proposal.css">
+</head>
+<body>
+<div class="topbar"><div class="in">
+  <h1>Proposal</h1>
+  <span class="status" id="gemStatus">Gemini ready</span>
+</div></div>
+
+<div class="wrap">
+  <div class="tabs" role="tablist" aria-hidden="true">
+    <button role="tab" id="tabAudit" aria-selected="false">Audit</button>
+    <button role="tab" id="tabProp" aria-selected="true">Write</button>
+    <button role="tab" id="tabBook" aria-selected="false">Playbook</button>
+  </div>
+
+  <section id="auditView" hidden>
+    <h2 style="margin:16px 0 12px;font-size:1.5rem;font-weight:800">Audit</h2>
+    <div class="card" style="margin-bottom:12px">
+      <form id="auditForm" style="gap:10px;display:flex;flex-direction:column">
+        <input type="text" id="auditSite" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="Website (e.g. example.com)" aria-label="Website address">
+        <input type="text" id="auditGbp" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="Google profile link (optional)" aria-label="Business Profile link">
+        <button class="go" id="auditGo" type="submit">Run audit</button>
+      </form>
+    </div>
+    <details id="keyBox" style="margin-bottom:12px">
+      <summary style="color:var(--blue);font-weight:600;cursor:pointer">Speed test key (free, optional)</summary>
+      <p class="hint">Google's shared free speed limit runs out often. A free key of your own removes that. On a computer or in desktop mode: console.cloud.google.com, create a project, enable "PageSpeed Insights API", then Credentials, Create API key. Paste it here.</p>
+      <input type="text" id="psiKey" autocapitalize="off" autocorrect="off" placeholder="Paste key (starts with AIza)" aria-label="PageSpeed API key">
+      <div class="btns" style="margin-top:8px"><button class="btn" id="keySave" type="button">Save key</button><span id="keyMsg" class="hint" style="margin:0;align-self:center"></span></div>
+    </details>
+    <div id="auditOut">
+      <div id="siteOut"></div>
+      <div id="gbpOut"></div>
+    </div>
+  </section>
+
+  <section id="propView"></section>
+  <section id="bookView" hidden></section>
+</div>
+
+<nav class="bnav" role="tablist" aria-label="Main navigation">
+  <button id="bnavWrite" role="tab" aria-selected="true" onclick="showTab('prop')">
+    <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    Write
+  </button>
+  <button id="bnavClients" role="tab" aria-selected="false" onclick="showClientsView()">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+    Clients
+  </button>
+  <button id="bnavAudit" role="tab" aria-selected="false" onclick="showTab('audit')">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    Audit
+  </button>
+  <button id="bnavPlaybook" role="tab" aria-selected="false" onclick="showTab('book')">
+    <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+    Playbook
+  </button>
+</nav>
+
+<script src="audit-client.js?v=6"></script>
+<script>
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const strip = (h) => String(h).replace(/<br\s*\/?>/gi, "; ").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+
+/* ---------- open links outside the app ---------- */
+const BrowserP = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Browser;
+function openExt(url) {
+  try { if (BrowserP) { BrowserP.open({ url }); return; } } catch {}
+  window.open(url, "_blank");
+}
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("a[href]");
+  if (a && /^https?:/i.test(a.getAttribute("href"))) { e.preventDefault(); openExt(a.href); }
+});
+
+/* ---------- copy ---------- */
+async function copyText(txt, btn, label) {
+  let ok = false;
+  try { await navigator.clipboard.writeText(txt); ok = true; } catch {}
+  if (!ok) {
+    try {
+      const ta = document.createElement("textarea");
+      ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); ta.remove();
+    } catch {}
+  }
+  if (ok) { btn.textContent = "Copied"; }
+  else {
+    btn.textContent = "Press and hold the text below to copy";
+    if (!btn.nextElementSibling || btn.nextElementSibling.tagName !== "PRE") { const pre = document.createElement("pre"); pre.textContent = txt; btn.parentElement.after(pre); }
+  }
+  setTimeout(() => (btn.textContent = label), 2500);
+}
+
+/* ---------- tabs ---------- */
+const TABS = { audit: ["tabAudit", "auditView"], prop: ["tabProp", "propView"], book: ["tabBook", "bookView"] };
+const BNAV_MAP = { audit: "bnavAudit", prop: "bnavWrite", book: "bnavPlaybook" };
+function showTab(n) {
+  if (n === "site" || n === "gbp") n = "audit";
+  Object.entries(TABS).forEach(([k, [t, v]]) => { $("#" + v).hidden = k !== n; $("#" + t).setAttribute("aria-selected", k === n); });
+  // update bottom nav
+  ["bnavWrite","bnavClients","bnavAudit","bnavPlaybook"].forEach((id) => { const el = $("#" + id); if (el) el.setAttribute("aria-selected", id === (BNAV_MAP[n] || "bnavWrite")); });
+  // hide clients state if switching away
+  if (n !== "prop" && window._propClientsActive) { window._propClientsActive = false; if (window.PA_showSection) window.PA_showSection("form"); }
+}
+function showClientsView() {
+  showTab("prop");
+  window._propClientsActive = true;
+  if (window.PA_showSection) window.PA_showSection("clients");
+  // update nav
+  ["bnavWrite","bnavClients","bnavAudit","bnavPlaybook"].forEach((id) => { const el = $("#" + id); if (el) el.setAttribute("aria-selected", id === "bnavClients"); });
+}
+Object.entries(TABS).forEach(([k, [t]]) => ($("#" + t).onclick = () => showTab(k)));
+// Gemini status update
+window.PA_setGemStatus = (ok) => { const s = $("#gemStatus"); if (s) { s.textContent = ok ? "● Gemini ready" : "Gemini not set"; s.style.background = ok ? "" : "var(--warnbg)"; s.style.color = ok ? "" : "var(--warn)"; } };
+
+/* ---------- PageSpeed key ---------- */
+try { $("#psiKey").value = localStorage.getItem("psiKey") || ""; } catch {}
+$("#keySave").onclick = () => {
+  try { localStorage.setItem("psiKey", $("#psiKey").value.trim()); $("#keyMsg").textContent = "Saved"; } catch { $("#keyMsg").textContent = "Could not save"; }
+};
+
+/* ---------- visual pieces ---------- */
+const col = (p) => (p >= 80 ? "var(--ok)" : p >= 50 ? "var(--warn)" : "var(--bad)");
+const gauge = (pct, label, size = 64) => {
+  const r = 26, c = 2 * Math.PI * r;
+  return `<div class="gauge"><svg viewBox="0 0 64 64" width="${size}" height="${size}" role="img" aria-label="${esc(label)} ${pct}"><circle cx="32" cy="32" r="${r}" fill="none" stroke="var(--line)" stroke-width="7"/><circle cx="32" cy="32" r="${r}" fill="none" stroke="${col(pct)}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${(c * pct / 100).toFixed(1)} ${c.toFixed(1)}" transform="rotate(-90 32 32)"/><text x="32" y="37" text-anchor="middle" font-size="16" font-weight="800" fill="var(--ink)">${pct}</text></svg><small>${esc(label)}</small></div>`;
+};
+const meter = (v, lo, hi, max) =>
+  `<div class="meter"><div class="zone" style="left:${lo / max * 100}%;width:${(hi - lo) / max * 100}%"></div><div class="mk" style="left:${Math.min(v, max) / max * 100}%"></div></div><div class="scale"><span>0</span><span>ideal ${lo} to ${hi}</span><span>${max}+</span></div>`;
+const kwBars = (arr) => {
+  if (!arr.length) return "";
+  const m = Math.max(...arr.map((k) => k.count));
+  return `<div class="kw">${arr.map((k) => `<span class="lab">${esc(k.term)}</span><span class="n" style="grid-row:span 2">${k.count}</span><span class="bar" style="width:${Math.max(6, k.count / m * 100)}%"></span>`).join("")}</div>`;
+};
+const FIELD_LABEL = { name: "Name", url: "URL", phone: "Phone", address: "Address", hours: "Hours", geo: "Map point", sameAs: "Profiles", rating: "Rating", image: "Image", price: "Price" };
+
+/* ---------- state ---------- */
+let S = null; // { d, items, psi }
+
+const CATS = [["onpage", "On-page"], ["technical", "Technical"], ["schema", "Schema"], ["offpage", "Off-page"]];
+const lvlLabel = { ok: "Good", warn: "Fix", bad: "Missing", info: "Info" };
+const rowHtml = (it, first) => `<div class="row${first ? " first" : ""}"><span class="chip ${it.lvl}">${lvlLabel[it.lvl]}</span><div class="t"><b>${esc(it.title)}</b><div class="d">${it.html}</div></div></div>`;
+
+function catScore(items, cat) {
+  const l = items.filter((i) => i.cat === cat && i.lvl !== "info");
+  if (!l.length) return null;
+  const pts = l.reduce((a, i) => a + (i.lvl === "ok" ? 1 : i.lvl === "warn" ? 0.5 : 0), 0);
+  return Math.round(pts / l.length * 100);
+}
+
+function buildSummary() {
+  const { d, items, psi } = S;
+  let host = d.finalUrl; try { host = new URL(d.finalUrl).hostname; } catch {}
+  const sc = {}; CATS.forEach(([k, n]) => (sc[k] = catScore(items, k)));
+  const overall = overallScore();
+  const bad = items.filter((i) => i.lvl === "bad"), warn = items.filter((i) => i.lvl === "warn"), ok = items.filter((i) => i.lvl === "ok");
+  const L = [];
+  L.push(`WEBSITE AUDIT: ${host}`);
+  L.push(`Date: ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`);
+  L.push(`Overall ${overall}/100 | ` + CATS.filter(([k]) => sc[k] != null).map(([k, n]) => `${n} ${sc[k]}`).join(" | "));
+  if (psi) L.push(`Speed ${psi.perf}/100 (mobile), SEO ${psi.seo}, LCP ${psi.lcp}, TBT ${psi.tbt}`);
+  else L.push(`Server response ${d.server.responseMs} ms, page ${d.server.htmlKb} KB`);
+  const fix = [...bad, ...warn];
+  if (fix.length) { L.push(""); L.push("FIX FIRST"); fix.slice(0, 10).forEach((i, n) => L.push(`${n + 1}. ${i.title}: ${i.plain}`)); }
+  if (ok.length) { L.push(""); L.push("WORKING WELL"); L.push(ok.map((i) => i.title).join(", ")); }
+  return L.join("\n");
+}
+function overallScore() {
+  const v = CATS.map(([k]) => catScore(S.items, k)).filter((x) => x != null);
+  return v.length ? Math.round(v.reduce((a, b) => a + b, 0) / v.length) : 0;
+}
+
+function renderSite(d) {
+  const p = d.page, items = [];
+  const I = (cat, lvl, title, html, plain, sub) => items.push({ cat, lvl, title, html, plain: plain ?? strip(html), sub: sub || "" });
+
+  /* ON-PAGE: meta */
+  if (!p.titleLen) I("onpage", "bad", "Title tag", "No title found.", "missing", "Meta and keywords");
+  else I("onpage", p.titleLen >= 30 && p.titleLen <= 60 ? "ok" : "warn", "Title tag", `${esc(p.title)}<br>${p.titleLen} characters${meter(p.titleLen, 30, 60, 80)}`, `${p.titleLen} characters, aim 30 to 60`, "Meta and keywords");
+  if (!p.description) I("onpage", "bad", "Meta description", "No meta description.", "missing", "Meta and keywords");
+  else I("onpage", p.descriptionLen >= 70 && p.descriptionLen <= 160 ? "ok" : "warn", "Meta description", `${esc(p.description)}<br>${p.descriptionLen} characters${meter(p.descriptionLen, 70, 160, 200)}`, `${p.descriptionLen} characters, aim 70 to 160`, "Meta and keywords");
+  I("onpage", "info", "Meta keywords tag", p.keywordsMeta ? esc(p.keywordsMeta) : "None. Google ignores this tag, so it is not a problem.", p.keywordsMeta || "none", "Meta and keywords");
+  const top = (p.keywords.phrases[0] || p.keywords.single[0] || {}).term;
+  const inTitle = top && p.title.toLowerCase().includes(top.split(" ")[0]);
+  const topPhrases = p.keywords.phrases.filter((k) => k.term.includes(" ")).slice(0, 3);
+  I("onpage", top ? (inTitle ? "ok" : "warn") : "info", "Target keywords",
+    topPhrases.length ? `${inTitle ? "Top keyword is in the title." : "Top keyword missing from title."}<h3>Top phrases</h3>${kwBars(topPhrases)}` : "Not enough text to detect keyword phrases.",
+    topPhrases.length ? topPhrases[0].term + (inTitle ? "" : " (not in title)") : "n/a", "Meta and keywords");
+  I("onpage", p.canonical ? "ok" : "warn", "Canonical tag", p.canonical ? esc(p.canonical) : "Missing.", p.canonical || "missing", "Meta and keywords");
+  I("onpage", p.robotsMeta && /noindex/i.test(p.robotsMeta) ? "bad" : "ok", "Indexing tag", p.robotsMeta ? esc(p.robotsMeta) : "No blocking tag. The page can be indexed.", p.robotsMeta && /noindex/i.test(p.robotsMeta) ? "page is set to noindex" : "indexable", "Meta and keywords");
+  const ogOk = !!(p.og["og:title"] && p.og["og:image"]);
+  I("onpage", ogOk ? "ok" : "warn", "Social preview tags", `<div class="tags">${[["og:title", p.og["og:title"]], ["og:description", p.og["og:description"]], ["og:image", p.og["og:image"]], ["twitter:card", p.twitterCard]].map(([n, v]) => `<span class="tag ${v ? "on" : "off"}">${n}</span>`).join("")}</div>`, ogOk ? "present" : "og:title or og:image missing", "Meta and keywords");
+
+  /* ON-PAGE: structure */
+  const h1 = p.headings.h1;
+  I("onpage", h1 === 1 ? "ok" : h1 === 0 ? "bad" : "warn", "H1 heading", h1 === 1 ? esc(p.h1s[0]) : h1 === 0 ? "No H1 on the page." : `${h1} H1s found. Use one.`, h1 === 1 ? "one H1" : h1 === 0 ? "no H1" : `${h1} H1s, use one`, "Page structure");
+  const tree = p.headingList.length ? `<div class="tree">${p.headingList.map((h) => `<div style="padding-left:${(h.level - 1) * 16}px"><em>H${h.level}</em><span>${esc(h.text)}</span></div>`).join("")}</div>` : "";
+  I("onpage", "info", "Heading outline", `H1 ${p.headings.h1}, H2 ${p.headings.h2}, H3 ${p.headings.h3}, H4 ${p.headings.h4}${tree}`, `H1 ${p.headings.h1}, H2 ${p.headings.h2}, H3 ${p.headings.h3}`, "Page structure");
+  I("onpage", p.words >= 300 ? "ok" : "warn", "Text on the page", `About ${p.words} words.${p.words < 300 ? " Thin for a service page." : ""}`, `${p.words} words`, "Page structure");
+  I("onpage", !p.images.total || !p.images.missingAlt ? "ok" : "warn", "Images", `${p.images.total} images, ${p.images.missingAlt} without alt text, ${p.images.lazy} lazy loaded.`, `${p.images.total} images, ${p.images.missingAlt} missing alt text`, "Page structure");
+  I("onpage", p.links.internal >= 3 ? "ok" : "warn", "Links", `${p.links.internal} internal, ${p.links.external} external, ${p.links.tel} tap-to-call.`, `${p.links.internal} internal, ${p.links.external} external, ${p.links.tel} tap-to-call`, "Page structure");
+  I("onpage", p.nap.phone && p.nap.address ? "ok" : "warn", "Phone and address on page", `Phone ${p.nap.phone ? "found" : "not found"}, address ${p.nap.address ? "found" : "not found"}. Must match the Business Profile exactly.`, `phone ${p.nap.phone ? "yes" : "no"}, address ${p.nap.address ? "yes" : "no"}`, "Page structure");
+
+  /* TECHNICAL */
+  I("technical", d.https ? "ok" : "bad", "HTTPS", d.https ? "Site uses HTTPS." : "Site is not on HTTPS.", d.https ? "yes" : "no");
+  if (d.httpRedirectsToHttps !== null) I("technical", d.httpRedirectsToHttps ? "ok" : "warn", "HTTP to HTTPS redirect", d.httpRedirectsToHttps ? "Redirects correctly." : "The http:// version does not redirect to https://.", d.httpRedirectsToHttps ? "yes" : "no redirect");
+  I("technical", p.viewport ? "ok" : "bad", "Mobile viewport", p.viewport ? esc(p.viewport) : "No viewport tag. The page will not scale on phones.", p.viewport ? "present" : "missing");
+  I("technical", p.lang ? "ok" : "warn", "Language attribute", p.lang ? esc(p.lang) : "No lang on the html tag.", p.lang || "missing");
+  I("technical", p.favicon ? "ok" : "warn", "Favicon", p.favicon ? "Found." : "Not found.", p.favicon ? "yes" : "missing");
+  const ms = d.server.responseMs;
+  I("technical", ms < 1000 ? "ok" : ms < 2500 ? "warn" : "bad", "Server response", `${ms} ms to get the page, ${d.server.htmlKb} KB of HTML.${meter(Math.min(ms, 4000), 0, 1000, 4000)}`, `${ms} ms, ${d.server.htmlKb} KB of HTML`);
+  I("technical", d.robots.found ? (d.robots.disallowAll ? "bad" : "ok") : "warn", "robots.txt",
+    d.robots.found ? (d.robots.disallowAll ? "Blocks all crawlers." : `Found. ${d.robots.disallows} disallow rules, ${d.robots.sitemaps.length} sitemap line${d.robots.sitemaps.length === 1 ? "" : "s"}.`) + `<details><summary>View file</summary><pre>${esc((d.robots.preview || []).join("\n"))}</pre></details>` : `Not readable (HTTP ${d.robots.status || "no answer"}). It may be blocked for apps, so check it in a browser.`,
+    d.robots.found ? (d.robots.disallowAll ? "blocks all crawlers" : "found") : `not readable (HTTP ${d.robots.status || "no answer"})`);
+  I("technical", d.sitemap.found ? "ok" : "warn", "Sitemap",
+    d.sitemap.found ? `${esc(d.sitemap.url)}<br>${d.sitemap.urls} entries${d.sitemap.index ? " (index of sitemaps)" : ""}.` : `Not found at the usual addresses (last answer HTTP ${d.sitemap.status || "none"}).`,
+    d.sitemap.found ? `found, ${d.sitemap.urls} entries` : "not found at usual addresses");
+
+  /* SCHEMA */
+  const s = p.schema;
+  const hasAny = s.blocks > 0 || s.microdata;
+  const schemaTypes = s.types.filter((t) => !/BreadcrumbList/i.test(t));
+  I("schema", hasAny ? "ok" : "bad", "Structured data", hasAny ? `${s.blocks} JSON-LD block${s.blocks === 1 ? "" : "s"}${s.microdata ? " plus microdata" : ""}.${s.invalid ? ` ${s.invalid} could not be parsed.` : ""}<div class="tags">${schemaTypes.map((t) => `<span class="tag on">${esc(t)}</span>`).join("")}</div>` : "No schema markup found.", hasAny ? "types: " + (schemaTypes.join(", ") || "microdata only") : "none found");
+  const localRe = /Business|Contractor|Plumber|Electrician|Restaurant|Store|Organization|Service|Dentist|Physician|Attorney|Salon|Hotel/i;
+  const hasLocal = s.types.some((t) => localRe.test(t));
+  I("schema", hasLocal ? "ok" : "warn", "Local business schema", hasLocal ? "A business type is present." : "No LocalBusiness or similar type. A strong proposal point.", hasLocal ? "present" : "missing");
+  I("schema", s.types.includes("FAQPage") ? "ok" : "info", "FAQ schema", s.types.includes("FAQPage") ? "Present." : "Not present.");
+
+  /* OFF-PAGE (what the site shows about itself) */
+  I("offpage", p.social.length >= 2 ? "ok" : p.social.length ? "warn" : "bad", "Social profiles linked", p.social.length ? `<div class="tags">${p.social.map(({name, url}) => `<a class="tag on" href="${esc(url)}">${esc(name)}</a>`).join("")}</div>` : "No social profile links found.", p.social.length ? p.social.map((s) => s.name).join(", ") : "none linked");
+  I("offpage", p.sameAsCount ? "ok" : "warn", "Profiles named in schema (sameAs)", p.sameAsCount ? `${p.sameAsCount} linked.` : "None. Adding them ties the site to its profiles.", p.sameAsCount ? `${p.sameAsCount} linked` : "none");
+  I("offpage", p.mapsEmbed || p.mapsLink ? "ok" : "warn", "Google Maps on the site", p.mapsEmbed ? "Map is embedded." : p.mapsLink ? "A Google Maps link is present." : "No Google Maps link or embed.", p.mapsEmbed ? "map embedded" : p.mapsLink ? "maps link present" : "no maps link or embed");
+
+  S = { d, items, psi: null };
+  let host = d.finalUrl; try { host = new URL(d.finalUrl).hostname; } catch {}
+  const ov = overallScore();
+  const n = { ok: items.filter((i) => i.lvl === "ok").length, warn: items.filter((i) => i.lvl === "warn").length, bad: items.filter((i) => i.lvl === "bad").length };
+  const tot = n.ok + n.warn + n.bad || 1;
+  const fixList = items.filter((i) => i.lvl === "bad" || i.lvl === "warn").slice(0, 6);
+
+  const section = (cat, title, extra = "") => {
+    const list = items.filter((i) => i.cat === cat);
+    if (!list.length) return "";
+    let html = "", sub = null, first = true;
+    list.forEach((i) => {
+      if (i.sub && i.sub !== sub) { html += `<h3>${esc(i.sub)}</h3>`; sub = i.sub; first = true; }
+      html += rowHtml(i, first); first = false;
+    });
+    return `<div class="card" data-cat="${cat}"><h2>${title}</h2>${html}${extra}</div>`;
+  };
+
+  const schemaVisual = s.items.length ? s.items.map((it) => `<div class="schemaCard"><b>${esc(it.type)}</b><div class="tags">${Object.entries(it.fields).map(([k, v]) => `<span class="tag ${v ? "on" : "off"}">${FIELD_LABEL[k]}</span>`).join("")}</div></div>`).join("") : "";
+  const q = encodeURIComponent(host);
+  const schemaLinks = `<div class="btns" style="margin-top:12px"><a class="btn" href="https://validator.schema.org/#url=${encodeURIComponent(d.finalUrl)}">Schema validator</a><a class="btn" href="https://search.google.com/test/rich-results">Rich Results Test</a></div><p class="hint">In the Rich Results Test, paste: ${esc(d.finalUrl)}</p>`;
+  const offLinks = `<h3>Free checks (open in browser)</h3><div class="btns"><a class="btn" href="https://ahrefs.com/backlink-checker/?input=${q}&mode=subdomains">Backlinks</a><a class="btn" href="https://www.google.com/search?q=site%3A${q}">Indexed pages</a><a class="btn" href="https://www.google.com/search?q=%22${q}%22+-site%3A${q}">Mentions</a></div>`;
+
+  const catPills = CATS.map(([k, nm]) => { const v = catScore(items, k); return v == null ? "" : `<span class="cat-pill"><span style="color:${col(v)}">${nm}</span> <b>${v}</b></span>`; }).join("");
+  const fixes = items.filter((i) => i.lvl === "bad" || i.lvl === "warn").slice(0, 5);
+  const fixOl = fixes.length ? `<ol class="fix-ol">${fixes.map((i, idx) => `<li class="${i.lvl}" data-n="${idx + 1}">${esc(i.title)}</li>`).join("")}</ol>` : "";
+
+  // Glimpse data
+  const topKw = p.keywords.phrases.filter((k) => k.term.includes(" ")).slice(0, 3).map((k) => esc(k.term)).join(" · ") || "—";
+  const schemaTypeList = schemaTypes.slice(0, 5).map(esc).join(" · ") || "None";
+  const sitemapLine = d.sitemap.found ? `✓ ${d.sitemap.urls} URLs — <a href="${esc(d.sitemap.url)}" target="_blank">view</a>` : "Not found";
+  const h1Text = p.h1s[0] ? p.h1s[0].slice(0, 60) : "(missing)";
+  const lm = d.server.lastModified ? (() => { try { return new Date(d.server.lastModified).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }); } catch { return d.server.lastModified; } })() : null;
+  const gbpUrl = ($("#auditGbp") && $("#auditGbp").value.trim()) || "";
+  const hasLocalSchema = s.types.some((t) => /LocalBusiness|Organization|Restaurant|Store|Hotel|Medical|Dental|Law|Plumb|HVAC/i.test(t));
+  const hasNap = p.nap.phone && p.nap.address;
+  const aiLine = hasLocalSchema && hasNap ? `<span style="color:var(--ok)">✓ Schema + NAP found</span>` : hasLocalSchema ? `<span style="color:var(--warn)">Partial — add phone &amp; address to schema</span>` : `<span style="color:var(--bad)">No business schema</span>`;
+  const socialHtml = p.social.length ? p.social.slice(0, 5).map((s2) => `<a class="tag on" href="${esc(s2.url)}" target="_blank">${esc(s2.name)}</a>`).join(" ") : "None found";
+
+  const gr = (l, v) => `<span class="gl">${l}</span><span class="gv">${v}</span>`;
+  const speedInit = `<span id="speedGlimpse">${d.server.responseMs} ms server</span> <span id="speedPsi" style="color:var(--muted);font-size:.8rem">· mobile score loading…</span>`;
+  const glimpseHtml = [
+    gr("H1", `<b>${esc(h1Text)}</b>`),
+    gr("Keywords", `<b>${topKw}</b>`),
+    gr("Speed", speedInit),
+    gr("Sitemap", sitemapLine),
+    gr("Schema", schemaTypeList),
+    gr("AI ready", aiLine),
+    gr("Social", socialHtml),
+    gbpUrl ? gr("GBP", `<a href="${esc(gbpUrl)}" target="_blank">View profile ↗</a>`) : gr("GBP", `<span style="color:var(--muted)">No GBP link entered — add one to include profile audit</span>`),
+    lm ? gr("Last modified", esc(lm)) : "",
+  ].filter(Boolean).join("");
+
+  const extLinks = `<div class="glimpse-ext">
+    <a href="https://ahrefs.com/backlink-checker/?input=${q}&mode=subdomains" target="_blank">Backlinks</a>
+    <a href="https://www.google.com/search?q=site%3A${q}" target="_blank">Indexed pages</a>
+    <a href="https://www.similarweb.com/website/${q}/" target="_blank">Traffic</a>
+    <a href="https://www.google.com/search?q=%22${q}%22+-site%3A${q}" target="_blank">Mentions</a>
+  </div>`;
+
+  $("#siteOut").innerHTML = `
+    <div class="card" data-cat="all">
+      <div class="sum-head">
+        <div class="sum-score" style="color:${col(ov)}">${ov}</div>
+        <div><div class="sum-host">${esc(host)}</div><div class="sum-cats">${catPills}</div></div>
+      </div>
+      <div class="glimpse-table">${glimpseHtml}</div>
+      ${extLinks}
+      ${fixOl}
+      ${n.ok ? `<p class="sum-ok"><b>✓ ${n.ok}</b> checks passed</p>` : ""}
+      <div class="btns"><button class="btn fill" id="copyBtn" type="button">Copy summary</button><button class="btn" id="siteBrief" type="button">Copy client brief</button><button class="btn" id="toProp" type="button">Write proposal →</button></div>
+    </div>
+    <div class="filters" role="group" aria-label="Filter">
+      <button type="button" data-f="all" aria-pressed="true">All</button>${CATS.map(([k, nm]) => `<button type="button" data-f="${k}" aria-pressed="false">${nm}</button>`).join("")}
+    </div>
+    <div class="card" data-cat="technical"><h2>Speed (mobile, Google PageSpeed)</h2><div id="psi"><p class="hint">Running. Keep the app open.</p></div></div>
+    ${section("onpage", "On-page")}
+    ${section("technical", "Technical")}
+    ${section("schema", "Schema", schemaVisual + schemaLinks)}
+    ${section("offpage", "Off-page", offLinks)}`;
+
+  $("#copyBtn").onclick = () => copyText(buildSummary(), $("#copyBtn"), "Copy summary");
+  $("#siteBrief").onclick = () => {
+    const { items } = S;
+    const bad = items.filter((i) => i.lvl === "bad"), warn = items.filter((i) => i.lvl === "warn"), ok = items.filter((i) => i.lvl === "ok");
+    const lines = [`Website audit: ${host}`, `Overall score: ${overallScore()}/100`, ""];
+    if (bad.length || warn.length) {
+      lines.push("What needs fixing:");
+      [...bad, ...warn].slice(0, 8).forEach((i, n) => lines.push(`${n + 1}. ${i.title} — ${i.plain}`));
+    }
+    if (ok.length) {
+      lines.push("", "Already good:");
+      lines.push(ok.map((i) => i.title).join(", "));
+    }
+    copyText(lines.join("\n"), $("#siteBrief"), "Copy client brief");
+  };
+  $("#toProp").onclick = () => {
+    const gbpVal = $("#auditGbp") ? $("#auditGbp").value.trim() : "";
+    if (window.PA_fromAudit) window.PA_fromAudit(d.finalUrl, gbpVal);
+  };
+  document.querySelectorAll(".filters button").forEach((b) => (b.onclick = () => {
+    document.querySelectorAll(".filters button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+    const f = b.dataset.f;
+    document.querySelectorAll("#siteOut .card").forEach((c) => (c.hidden = !(f === "all" || c.dataset.cat === "all" || c.dataset.cat === f)));
+    document.querySelectorAll("#siteOut .card[data-cat=all]").forEach((c) => (c.hidden = f !== "all"));
+  }));
+}
+
+/* ---------- PageSpeed ---------- */
+async function runPsi(url, serverMs) {
+  const box = $("#psi");
+  let key = ""; try { key = localStorage.getItem("psiKey") || ""; } catch {}
+  const q = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed?strategy=mobile&category=performance&category=seo&category=accessibility&category=best-practices&url=" + encodeURIComponent(url) + (key ? "&key=" + encodeURIComponent(key) : "");
+  const web = "https://pagespeed.web.dev/analysis?form_factor=mobile&url=" + encodeURIComponent(url);
+  try {
+    const r = await http(q, 90000);
+    let j = {}; try { j = JSON.parse(r.text); } catch {}
+    if (!r.ok || j.error) {
+      const msg = (j.error && j.error.message) || "";
+      const quota = /quota|limit|429/i.test(msg) || r.status === 429;
+      throw new Error(quota ? "quota" : msg || "PageSpeed did not answer (HTTP " + r.status + ")");
+    }
+    const c = j.lighthouseResult.categories, a = j.lighthouseResult.audits;
+    const sc = (k) => Math.round(((c[k] && c[k].score) ?? 0) * 100);
+    const dv = (id) => (a[id] && a[id].displayValue) || "n/a";
+    S.psi = { perf: sc("performance"), seo: sc("seo"), acc: sc("accessibility"), bp: sc("best-practices"), lcp: dv("largest-contentful-paint"), tbt: dv("total-blocking-time"), cls: dv("cumulative-layout-shift") };
+    const sg = $("#speedGlimpse"); if (sg) { sg.style.color = col(S.psi.perf); sg.textContent = (serverMs || "") + (serverMs ? " ms server" : ""); }
+    const sp = $("#speedPsi"); if (sp) { sp.style.color = col(S.psi.perf); sp.textContent = `· ${S.psi.perf} mobile · ${S.psi.seo} SEO`; }
+    const m = (id, l) => a[id] ? `<div class="row"><span class="chip ${a[id].score >= .9 ? "ok" : a[id].score >= .5 ? "warn" : "bad"}">${a[id].score >= .9 ? "Good" : a[id].score >= .5 ? "Fix" : "Slow"}</span><div class="t"><b>${l}</b><div class="d">${esc(a[id].displayValue || "")}</div></div></div>` : "";
+    const opps = Object.values(a).filter((x) => x.details && x.details.type === "opportunity" && x.details.overallSavingsMs > 300).sort((x, y) => y.details.overallSavingsMs - x.details.overallSavingsMs).slice(0, 4);
+    box.innerHTML = `<div class="gauges">${gauge(S.psi.perf, "Speed")}${gauge(S.psi.seo, "SEO")}${gauge(S.psi.acc, "Access.")}${gauge(S.psi.bp, "Practices")}</div>` +
+      m("largest-contentful-paint", "Largest Contentful Paint") + m("first-contentful-paint", "First Contentful Paint") + m("total-blocking-time", "Total Blocking Time") + m("cumulative-layout-shift", "Layout Shift") + m("speed-index", "Speed Index") +
+      (opps.length ? `<div class="row"><span class="chip info">Tips</span><div class="t"><b>Biggest savings</b><div class="d">${opps.map((o) => esc(o.title) + " (" + (o.details.overallSavingsMs / 1000).toFixed(1) + " s)").join("<br>")}</div></div></div>` : "") +
+      `<p class="hint"><a href="${web}">Open the full report</a></p>`;
+  } catch (e) {
+    box.innerHTML = e.message === "quota"
+      ? `<div class="note">Google's shared free speed limit is used up for today. Add your own free key (see "Speed test key" above the audit button) to fix this for good.</div><div class="btns"><a class="btn fill" href="${web}">Run speed test on Google</a></div><p class="hint">The result opens in your browser. The server timing below is still measured by this app.</p>`
+      : `<div class="err">${esc(e.message)}</div><div class="btns"><a class="btn fill" href="${web}">Run speed test on Google</a></div>`;
+  }
+}
+
+$("#auditForm").onsubmit = async (e) => {
+  e.preventDefault();
+  const siteVal = $("#auditSite").value.trim();
+  const gbpVal = $("#auditGbp").value.trim();
+  if (!siteVal && !gbpVal) return;
+  const go = $("#auditGo"); go.disabled = true; go.textContent = "Checking...";
+  $("#siteOut").innerHTML = "";
+  $("#gbpOut").innerHTML = "";
+  // Run GBP and website in parallel where possible
+  const tasks = [];
+  if (siteVal) tasks.push((async () => {
+    try {
+      const d = await auditSite(siteVal);
+      renderSite(d);
+      go.textContent = "Checking speed...";
+      await runPsi(d.finalUrl, d.server.responseMs);
+    } catch (err) {
+      $("#siteOut").innerHTML = `<div class="err">${esc(err.message)}</div>`;
+    }
+  })());
+  if (gbpVal) tasks.push((async () => {
+    try {
+      await runGbpAudit(gbpVal);
+    } catch (err) {
+      $("#gbpOut").innerHTML = `<div class="err">${esc(err.message)}</div>`;
+    }
+  })());
+  await Promise.all(tasks);
+  go.disabled = false; go.textContent = "Audit";
+};
+
+/* ---------- Business Profile ---------- */
+async function runGbpAudit(v) {
+  const d = await auditGbp(v);
+  const key = "gbp:" + (d.cid || d.name || v);
+  let saved = {}; try { saved = JSON.parse(localStorage.getItem(key) || "{}"); } catch {}
+  $("#gbpOut").innerHTML = `
+    <div class="card"><h2>Google Business Profile${d.name ? ": " + esc(d.name) : ""}</h2>
+      ${d.name ? "" : `<div class="note">The name could not be read from this link. Type it below.</div>`}
+      <label class="field" for="gName">Business name</label>
+      <input type="text" id="gName" value="${esc(saved.name || d.name)}" placeholder="e.g. Berlin Plumbing Co">
+      <label class="field" for="gSearch">Service and city (to find rivals)</label>
+      <input type="text" id="gSearch" value="${esc(saved.search || "")}" placeholder="e.g. plumber Berlin">
+      <div class="btns" style="margin-top:12px">
+        <button class="btn fill" type="button" id="bOpen">Open profile</button>
+        <button class="btn" type="button" id="bName">Search the name</button>
+        <button class="btn" type="button" id="bRiv">Rivals on Maps</button>
+        <button class="btn" type="button" id="bPack">Google results</button>
+      </div>
+    </div>
+    <div class="card"><h2>Profile checklist</h2>
+      <div class="big"><div id="gRing"></div><div><b id="gCount"></b><small>items confirmed good</small></div></div>
+      <div id="chk"></div>
+      <label class="field" for="gbpNotes">Notes for the proposal</label>
+      <textarea id="gbpNotes" rows="4"></textarea>
+      <div class="btns" style="margin-top:10px"><button class="btn fill" id="gbpCopy" type="button">Copy checklist result</button><button class="btn" id="gbpBrief" type="button">Copy client brief</button></div>
+    </div>`;
+  $("#chk").innerHTML = GBP_ITEMS.map((it, i) => `<div class="check${i ? "" : " first"}"><input type="checkbox" id="c${i}" ${saved["c" + i] ? "checked" : ""}><label for="c${i}">${esc(it[0])}${it[1] ? `<small>${esc(it[1])}</small>` : ""}</label></div>`).join("");
+  $("#gbpNotes").value = saved.notes || "";
+  const nm = () => $("#gName").value.trim();
+  const sr = () => $("#gSearch").value.trim();
+  const g = (qs) => openExt("https://www.google.com/search?q=" + encodeURIComponent(qs));
+  const refresh = () => {
+    const done = GBP_ITEMS.filter((_, i) => $("#c" + i).checked).length;
+    const pct = Math.round(done / GBP_ITEMS.length * 100);
+    $("#gRing").innerHTML = gauge(pct, "Done");
+    $("#gCount").textContent = `${done} of ${GBP_ITEMS.length}`;
+    const o = { name: nm(), search: sr(), notes: $("#gbpNotes").value };
+    GBP_ITEMS.forEach((_, i) => (o["c" + i] = $("#c" + i).checked));
+    try { localStorage.setItem(key, JSON.stringify(o)); } catch {}
+  };
+  refresh();
+  $("#gbpOut").addEventListener("input", refresh);
+  $("#bOpen").onclick = () => openExt(d.finalUrl || d.raw);
+  $("#bName").onclick = () => { if (!nm()) return $("#gName").focus(); g(nm()); };
+  $("#bPack").onclick = () => { if (!sr()) return $("#gSearch").focus(); g(sr()); };
+  $("#bRiv").onclick = () => {
+    if (!sr()) return $("#gSearch").focus();
+    const at = d.coords.length === 2 ? `/@${d.coords[0]},${d.coords[1]},13z` : "";
+    openExt("https://www.google.com/maps/search/" + encodeURIComponent(sr()) + at);
+  };
+  $("#gbpCopy").onclick = () => {
+    const lines = [`BUSINESS PROFILE REVIEW: ${nm() || "business"}`, `Date: ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}`, ""];
+    const fix = GBP_ITEMS.filter((_, i) => !$("#c" + i).checked), good = GBP_ITEMS.filter((_, i) => $("#c" + i).checked);
+    lines.push(`Score: ${good.length} of ${GBP_ITEMS.length} good`);
+    if (fix.length) { lines.push("", "FIX FIRST"); fix.forEach((it, i) => lines.push(`${i + 1}. ${it[0]}`)); }
+    if (good.length) { lines.push("", "WORKING WELL"); lines.push(good.map((it) => it[0]).join("; ")); }
+    if ($("#gbpNotes").value.trim()) lines.push("", "Notes: " + $("#gbpNotes").value.trim());
+    copyText(lines.join("\n"), $("#gbpCopy"), "Copy checklist result");
+  };
+  $("#gbpBrief").onclick = () => {
+    const biz = nm() || "your business";
+    const done = GBP_ITEMS.filter((_, i) => $("#c" + i).checked).length;
+    const missing = GBP_ITEMS.filter((_, i) => !$("#c" + i).checked);
+    const lines = [`Google Business Profile — ${biz}`, `${done} of ${GBP_ITEMS.length} items are set up correctly.`, ""];
+    if (missing.length) {
+      lines.push("What still needs to be done:");
+      missing.forEach((it, i) => lines.push(`${i + 1}. ${it[0]}`));
+    } else {
+      lines.push("Everything looks good!");
+    }
+    copyText(lines.join("\n"), $("#gbpBrief"), "Copy client brief");
+  };
+}
+
+const GBP_ITEMS = [
+  ["Business name matches the real signage", "No keywords added to the name."],
+  ["Primary category is the most specific one", "Plus relevant secondary categories."],
+  ["Phone and address match the website exactly", "Same format everywhere."],
+  ["Website link works and goes to the right page", ""],
+  ["Opening hours are filled in, with holiday hours", ""],
+  ["Service areas or service list added", "Important for home services."],
+  ["Description is complete and natural", "Up to 750 characters."],
+  ["Services have descriptions", ""],
+  ["At least 10 photos, recent ones", "Logo, cover, work, team."],
+  ["Review count and average rating noted", "Write both numbers in the notes."],
+  ["Owner replies to reviews", "Check the last 5."],
+  ["Posts or updates in the last 30 days", ""],
+  ["Q&A has no unanswered questions", ""],
+  ["Booking, call or message button present", ""],
+];
+
+</script>
+<script src="seeds.js"></script>
+<script src="proposal.js"></script>
+</body>
+</html>

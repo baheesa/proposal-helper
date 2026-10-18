@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "proposal-helper",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "4321", "--directory", "www"],
+      "port": 4321,
+      "autoPort": false
+    }
+  ]
+}

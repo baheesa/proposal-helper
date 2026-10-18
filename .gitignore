@@ -1,0 +1,10 @@
+node_modules/
+android/.gradle/
+android/build/
+android/app/build/
+android/app/release/
+android/local.properties
+*.keystore
+*.jks
+design-handoff/
+www/seeds.js
